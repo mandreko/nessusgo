@@ -22,13 +22,16 @@ type Client struct {
 	password   string
 }
 
-func NewClient(base_url string, login string, password string) *Client {
-	return &Client{verify_ssl: false, base_url: base_url, login: login, password: password}
+func NewClient(base_url string) *Client {
+	return &Client{verify_ssl: false, base_url: base_url}
 }
 
-func (c *Client) Authenticate(login string, password string) bool {
+func (c *Client) Authenticate(login string, password string) (token string, response string) {
 
 	resource := "/login"
+
+	c.login = login
+	c.password = password
 
 	data := make(map[string]string)
 	data["login"] = login
@@ -36,11 +39,11 @@ func (c *Client) Authenticate(login string, password string) bool {
 
 	headers := make(map[string]string)
 
-	resp := c.Post(resource, data, headers)
+	response = string(c.Post(resource, data, headers))
 
-	fmt.Printf("Response Body: %v", string(resp))
+	token = "1234"
 
-	return false
+	return
 }
 
 func (c *Client) LogOut() {}

@@ -32,11 +32,12 @@ import (
 )
 
 func main() {
-	client := nessusgo.NewClient("https://10.0.0.39:8834", "admin", "password")
+	client := nessusgo.NewClient("https://nessushost:8834")
 
-	response := client.Authenticate("admin", "password")
+	token, response := client.Authenticate("user", "password")
 
-	fmt.Printf("Response %s", response)
+	fmt.Printf("Response %s\n", response)
+	fmt.Printf("Token %v\n", token)
 }
 ```
 
