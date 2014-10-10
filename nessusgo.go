@@ -2,13 +2,13 @@ package nessusgo
 
 import (
 	//"errors"
-	"fmt"
-	"log"
-	//"os"
 	"bytes"
 	"crypto/tls"
-	//"encoding/json"
+	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -16,17 +16,17 @@ import (
 )
 
 type Client struct {
-	verify_ssl bool
+	Verify_SSL bool
 	base_url   string
 	login      string
 	password   string
 }
 
 func NewClient(base_url string) *Client {
-	return &Client{verify_ssl: false, base_url: base_url}
+	return &Client{Verify_SSL: false, base_url: base_url}
 }
 
-func (c *Client) Authenticate(login string, password string) (token string, response string) {
+func (c *Client) Authenticate(login string, password string) (token string, response *Record) {
 
 	resource := "/login"
 
@@ -39,10 +39,9 @@ func (c *Client) Authenticate(login string, password string) (token string, resp
 
 	headers := make(map[string]string)
 
-	response = string(c.Post(resource, data, headers))
-
-	token = "1234"
-
+	var r = c.Post(resource, data, headers)
+	response, _ = decode(bytes.NewReader(r))
+	token = response.Reply.Contents.Token
 	return
 }
 
@@ -73,7 +72,7 @@ func (c *Client) Post(resource string, post_data map[string]string, headers map[
 	}
 
 	// Use SSL verification options
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !c.verify_ssl}}
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !c.Verify_SSL}}
 	client := &http.Client{Transport: tr}
 
 	resp, err := client.Do(req)
@@ -90,4 +89,48 @@ func (c *Client) Post(resource string, post_data map[string]string, headers map[
 	// TODO: Verify "OK" status message
 
 	return body
+}
+
+// Internal methods
+func decode(r io.Reader) (x *Record, err error) {
+	x = new(Record)
+	err = json.NewDecoder(r).Decode(x)
+	return
+}
+
+// JSON Parsing structs
+func (r Record) String() string {
+
+	//return fmt.Sprintf("%b", r)
+	out, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%s", out)
+}
+
+type Record struct {
+	Reply Reply `json:"reply"`
+}
+
+type Reply struct {
+	Contents Contents `json:"contents"`
+	Sequence int      `json:"seq"`
+	Status   string   `json:"status"`
+}
+
+type Contents struct {
+	IdleTimeout     int    `json:"idle_timeout"`
+	LoadedPluginSet int    `json:"loaded_plugin_set"`
+	MSP             bool   `json:"msp"`
+	PluginSet       int    `json:"plugin_set"`
+	ScannerBootTime int    `json:"scanner_boot_time"`
+	ServerUUID      string `json:"server_uuid"`
+	Token           string `json:"token"`
+	User            User   `json:"user"`
+}
+
+type User struct {
+	Admin bool   `json:"admin"`
+	Name  string `json:"name"`
 }
