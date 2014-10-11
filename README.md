@@ -34,11 +34,16 @@ import (
 func main() {
 	client := nessusgo.NewClient("https://nessushost:8834")
 
-	token, response := client.Authenticate("user", "password")
+	client.Authenticate("user", "password")
 
-	fmt.Printf("Response %s\n", response)
-	fmt.Printf("Token %v\n", token)
+	// List Scans
+	scans := client.ListScans()
+
+	client.LogOut()
+
+	fmt.Printf("Scans: %v\n", scans)
 }
+
 ```
 
 This can be ran from Go by running:

@@ -4,9 +4,7 @@ import (
 	//"errors"
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -129,53 +127,4 @@ func (c *Client) Post(resource string, post_data map[string]string, headers map[
 	//fmt.Printf("Debug Body: %v", string(body))
 
 	return body
-}
-
-// Internal methods
-func decode(r io.Reader) (x *Record, err error) {
-	x = new(Record)
-	err = json.NewDecoder(r).Decode(x)
-	return
-}
-
-// JSON Parsing structs
-func (r Record) String() string {
-
-	//return fmt.Sprintf("%b", r)
-	out, err := json.Marshal(r)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf("%s", out)
-}
-
-type Record struct {
-	Reply Reply `json:"reply"`
-}
-
-type Reply struct {
-	Contents Contents `json:"contents"`
-	Sequence int      `json:"seq,string"`
-	Status   string   `json:"status"`
-}
-
-type Contents struct {
-	IdleTimeout     int    `json:"idle_timeout,string"`
-	LoadedPluginSet int    `json:"loaded_plugin_set,string"`
-	MSP             string `json:"msp"` // Temporarily a string, due to uppercase "TRUE" Json parsing issues
-	PluginSet       int    `json:"plugin_set,string"`
-	ScannerBootTime int    `json:"scanner_boottime,string"`
-	ServerUUID      string `json:"server_uuid"`
-	Token           string `json:"token"`
-	User            User   `json:"user"`
-	Scans           Scans  `json:"scans"`
-}
-
-type Scans struct {
-	ScanList []string `json:"scanlist"`
-}
-
-type User struct {
-	Admin string `json:"admin"` // Temporarily a string, due to uppercase "TRUE" Json parsing issues
-	Name  string `json:"name"`
 }
