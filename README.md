@@ -27,21 +27,50 @@ An example of using the API library can be created in a standalone Go file:
 package main
 
 import (
-	"fmt"
-	"github.com/mandreko/nessusgo"
+  "fmt"
+  "github.com/mandreko/nessusgo"
 )
 
 func main() {
-	client := nessusgo.NewClient("https://nessushost:8834")
+  n := nessusgo.New("https://nessushost:8834")
 
-	client.Authenticate("user", "password")
+  if err := n.Login("user", "password"); err == nil {
+    fmt.Printf("Login successful\n")
+  }
 
-	// List Scans
-	scans := client.ListScans()
+  if record, err := n.Feed(); err == nil {
+    fmt.Printf("Nessus Server Version: %v\n", record.Reply.Contents.ServerVersion)
+  } else {
+    fmt.Printf("Error: %v\n", err)
+  }
 
-	client.LogOut()
+  if record, err := n.Uuid(); err == nil {
+    fmt.Printf("Server UUID: %s\n", *record)
+  } else {
+    fmt.Printf("Error: %v\n", err)
+  }
 
-	fmt.Printf("Scans: %v\n", scans)
+  if record, err := n.Server.GetLoad(); err == nil {
+    fmt.Printf("Server Platform: %v\n", record.Reply.Contents.Platform)
+    fmt.Printf("Load Average: %v\n", record.Reply.Contents.Load.LoadAverage)
+  } else {
+    fmt.Printf("Error: %v\n", err)
+  }
+
+  if records, err := n.Users.List(); err == nil {
+    fmt.Printf("Users: %v\n", len(*records))
+    for _,e := range *records {
+      fmt.Printf("\tName: %s\tAdmin: %v\tLast Login: %v\n", e.Name, e.IsAdmin, e.LastLogin)
+    }
+  } else {
+    fmt.Printf("Error: %v\n", err)
+  }
+
+  if err := n.Logout(); err == nil {
+    fmt.Printf("Logout successful\n")
+  } else {
+    fmt.Printf("Error: %v\n", err)
+  }
 }
 
 ```
@@ -50,6 +79,14 @@ This can be ran from Go by running:
 
 ```
 $ go run test.go
+Login successful
+Nessus Server Version: 5.0.1
+Server UUID: 151fa290-3618-f71d-146b-b145dc22f0e545f2a6dc426b05c7
+Server Platform: LINUX
+Load Average: 0
+Users: 1
+	Name: admin	Admin: true	Last Login: 2014-10-12 21:48:40 -0400 EDT
+Logout successful
 ```
 
 Alternatively, it can be compiled to a binary for your OS:
