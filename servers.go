@@ -95,7 +95,15 @@ type ServerSettingsContents struct {
 	SecureSettings ServerSettingsSecureSettings `json:"securesettings"`
 }
 
-//TODO: Look at a newer server to see if this is updated in newer versions of Nessus
 type ServerSettingsSecureSettings struct {
-	ProxySettings []string `json:"proxysettings"`
+	ProxySettings ServerSettingsProxySettings `json:"proxysettings"`
+}
+
+type ServerSettingsProxySettings struct {
+	Proxy         string `json:"proxy"`
+	ProxyPort     string `json:"proxy_port"`
+	ProxyUsername string `json:"proxy_username"`
+	ProxyPassword string `json:"proxy_password"`
+	UserAgent     string `json:"user_agent"`
+	CustomHost    string `json:"custom_host"`
 }
